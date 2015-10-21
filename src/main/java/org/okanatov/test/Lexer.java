@@ -1,25 +1,31 @@
 package org.okanatov.test;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+
 public class Lexer {
-    private char[] buffer;
-    private int curPos = 0;
+    private Reader input;
 
-    public Lexer(String str) {
-        this.buffer = str.toCharArray();
+    public Lexer(StringReader input) {
+        this.input = input;
     }
 
-    public char scan() {
-        if (curPos < buffer.length)
-            return buffer[curPos++];
-        else
-            return '$';
+    public int scan() throws IOException {
+        return input.read();
     }
 
-    public int mark() {
-        return curPos;
+    public void mark(int readLimit) throws IOException {
+        if (!input.markSupported())
+            throw new IOException("mark/reset is not supported");
+
+        input.mark(readLimit);
     }
 
-    public void reset(int pos) {
-        curPos = pos;
+    public void reset() throws IOException {
+        if (!input.markSupported())
+            throw new IOException("mark/reset is not supported");
+
+        input.reset();
     }
 }
