@@ -1,94 +1,58 @@
 package org.okanatov.test;
 
 import java.io.IOException;
-import java.io.StringReader;
+import java.io.Reader;
 
 public class Parser {
-    private char lookahead;
-    private int result = 0;
-    private int count = 0;
+    private Lexer lexer;
+    private int lookahead;
 
-    private final Lexer lexer;
-    private final Numbers Thousands = new Thousands();
-    private final Numbers Hundreds = new Hundreds();
-    private final Numbers Tens = new Tens();
-    private final Numbers Ones = new Ones();
-
-    public Parser(final String str) throws IOException {
-        this.lexer = new Lexer(new StringReader(str));
-        lookahead = (char) lexer.scan();
+    public Parser(Reader reader) throws IOException {
+        this.lexer = new Lexer(reader);
+        this.lookahead = lexer.scan();
     }
 
     public int evaluate() throws IOException {
-        final int thousands = evaluate(Thousands);
-        final int hundreds = evaluate(Hundreds);
-        final int tens = evaluate(Tens);
-        final int ones = evaluate(Ones);
-        return 1000 * thousands + 100 * hundreds + 10 * tens + ones;
-    }
+        lexer.unread(lookahead);
+        lexer.mark(10);
+        lookahead = lexer.scan();
 
-    private int evaluate(final Numbers numbers) throws IOException {
-        lexer.mark(5);
-        result = 0;
-        count = 0;
+        if (lookahead == -1)
+            return 0;
 
-        if (SmallDigit(numbers))
-            return result;
-
-        lexer.reset();
-        lookahead = (char) lexer.scan();
-        if (S4(numbers))
+        if (test4())
             return 4;
 
         lexer.reset();
-        lookahead = (char) lexer.scan();
-        if (S9(numbers))
+        lookahead = lexer.scan();
+
+        if (test9())
             return 9;
 
         lexer.reset();
-        lookahead = (char) lexer.scan();
-        if (S5(numbers))
-            return 5 + result;
+        lookahead = lexer.scan();
 
-        throw new Error("syntax error");
+        if (test5())
+            return 5;
+
+        throw new RuntimeException("syntax error");
     }
 
-    private boolean SmallDigit(final Numbers numbers) throws IOException {
-        return S1(numbers) || S2(numbers);
+    private boolean test5() throws IOException {
+        return match('V') && lookahead == -1;
     }
 
-    private boolean S1(final Numbers numbers) throws IOException {
-        if (++count > 3) return false;
-        if (match(numbers.getOne()) && SmallDigit(numbers)) {
-            result++;
-            return true;
-        }
-        return false;
+    private boolean test9() throws IOException {
+        return match('I') && match('X') && lookahead == -1;
     }
 
-    private boolean S2(final Numbers numbers) {
-        if (numbers instanceof Ones) return lookahead == '$';
-        return lookahead != numbers.getOne() &&
-               lookahead != numbers.getFive() &&
-               lookahead != numbers.getTen();
+    private boolean test4() throws IOException {
+        return match('I') && match('V') && lookahead == -1;
     }
 
-    private boolean S4(final Numbers numbers) throws IOException {
-        return match(numbers.getOne()) && match(numbers.getFive()) && S2(numbers);
-    }
-
-    private boolean S9(final Numbers numbers) throws IOException {
-        return match(numbers.getOne()) && match(numbers.getTen()) && S2(numbers);
-    }
-
-    private boolean S5(final Numbers numbers) throws IOException {
-        count = 0;
-        return match(numbers.getFive()) && SmallDigit(numbers);
-    }
-
-    private boolean match(final char i) throws IOException {
-        if ((lookahead == i)) {
-            lookahead = (char) lexer.scan();
+    private boolean match(int ch) throws IOException {
+        if (lookahead == ch) {
+            lookahead = lexer.scan();
             return true;
         }
         return false;
