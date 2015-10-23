@@ -28,24 +28,24 @@ public class Parser {
     }
 
     private int evaluate(final Numbers numbers) throws IOException {
-        lexer.mark(5);
+        //lexer.mark(5);
         result = 0;
         count = 0;
 
         if (SmallDigit(numbers))
             return result;
 
-        lexer.reset();
+        //lexer.reset();
         lookahead = (char) lexer.scan();
         if (S4(numbers))
             return 4;
 
-        lexer.reset();
+        //lexer.reset();
         lookahead = (char) lexer.scan();
         if (S9(numbers))
             return 9;
 
-        lexer.reset();
+        //lexer.reset();
         lookahead = (char) lexer.scan();
         if (S5(numbers))
             return 5 + result;
