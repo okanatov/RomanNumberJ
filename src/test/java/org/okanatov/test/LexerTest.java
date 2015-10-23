@@ -18,6 +18,9 @@ public class LexerTest {
         lexer.reset();
         assertEquals('b', lexer.scan());
         assertEquals('c', lexer.scan());
+        lexer.unread('c');
+        assertEquals('c', lexer.scan());
+        assertEquals('d', lexer.scan());
         lexer.reset();
         assertEquals('b', lexer.scan());
         assertEquals('c', lexer.scan());
