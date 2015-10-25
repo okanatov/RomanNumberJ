@@ -3,136 +3,141 @@ package org.okanatov.test;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.io.StringReader;
+
 import static org.junit.Assert.*;
 
 public class ParserTest {
-    //@Test
-    //public void testNull() {
-    //    Parser parser = new Parser("");
-    //    assertEquals(0, parser.evaluate());
+    @Ignore
+    public void testNull() throws IOException {
+        Parser parser = new Parser(new StringReader(""));
+        assertEquals(0, parser.evaluate());
+    }
+
+    @Ignore
+    public void testOne() throws IOException {
+        Parser parser = new Parser(new StringReader("I"));
+        assertEquals(1, parser.evaluate());
+    }
+
+    @Ignore
+    public void testTwo() throws IOException {
+        Parser parser = new Parser(new StringReader("II"));
+        assertEquals(2, parser.evaluate());
+    }
+
+    @Ignore
+    public void testThree() throws IOException {
+        Parser parser = new Parser(new StringReader("III"));
+        assertEquals(3, parser.evaluate());
+    }
+
+    //@Ignore(expected = Error.class)
+    //public void testFourWrong() throws IOException {
+    //    Parser parser = new Parser(new StringReader("IIII"));
+    //    parser.evaluate();
     //}
 
-    //@Test
-    //public void testOne() {
-    //    Parser parser = new Parser("I");
-    //    assertEquals(1, parser.evaluate());
+    @Ignore
+    public void testFour() throws IOException {
+        Parser parser = new Parser(new StringReader("IV"));
+        assertEquals(4, parser.evaluate());
+    }
+
+    //@Ignore(expected = Error.class)
+    //public void testFourWrong2() throws IOException {
+    //    Parser parser = new Parser(new StringReader("IIV"));
+    //    parser.evaluate();
     //}
 
-    //@Test
-    //public void testTwo() {
-    //    Parser parser = new Parser("II");
-    //    assertEquals(2, parser.evaluate());
+    //@Ignore(expected = Error.class)
+    //public void testFourWrong3() throws IOException {
+    //    Parser parser = new Parser(new StringReader("IIL"));
+    //    parser.evaluate();
     //}
 
-    //@Test
-    //public void testThree() {
-    //    Parser parser = new Parser("III");
-    //    assertEquals(3, parser.evaluate());
+    @Ignore
+    public void testNine() throws IOException {
+        Parser parser = new Parser(new StringReader("IX"));
+        assertEquals(9, parser.evaluate());
+    }
+
+    @Ignore
+    public void testFive() throws IOException {
+        Parser parser = new Parser(new StringReader("V"));
+        assertEquals(5, parser.evaluate());
+    }
+
+    @Ignore
+    public void testSix() throws IOException {
+        Parser parser = new Parser(new StringReader("VI"));
+        assertEquals(6, parser.evaluate());
+    }
+
+    @Ignore
+    public void testSeven() throws IOException {
+        Parser parser = new Parser(new StringReader("VII"));
+        assertEquals(7, parser.evaluate());
+    }
+
+    @Ignore
+    public void testEight() throws IOException {
+        Parser parser = new Parser(new StringReader("VIII"));
+        assertEquals(8, parser.evaluate());
+    }
+
+    //@Ignore(expected = Error.class)
+    //public void testNineWrong() throws IOException {
+    //    Parser parser = new Parser(new StringReader("VIIII"));
+    //    parser.evaluate();
     //}
 
-    //@Test(expected = Error.class)
-    //public void testFourWrong() {
-    //    Parser parser = new Parser("IIII");
-    //    assertEquals(0, parser.evaluate());
+    @Ignore
+    public void test11() throws IOException {
+        Parser parser = new Parser(new StringReader("XI"));
+        assertEquals(11, parser.evaluate());
+    }
+
+    @Ignore
+    public void test101() throws IOException {
+        Parser parser = new Parser(new StringReader("CI"));
+        assertEquals(101, parser.evaluate());
+    }
+
+    @Ignore
+    public void test111() throws IOException {
+        Parser parser = new Parser(new StringReader("CXI"));
+        assertEquals(111, parser.evaluate());
+    }
+
+    @Ignore
+    public void test211() throws IOException {
+        Parser parser = new Parser(new StringReader("CCXI"));
+        assertEquals(211, parser.evaluate());
+    }
+
+    @Test
+    public void test331() throws IOException {
+        Parser parser = new Parser(new StringReader("CCCXXXI"));
+        assertEquals(331, parser.evaluate());
+    }
+
+    //@Ignore(expected = Error.class)
+    //public void test431Wrong() throws IOException {
+    //    Parser parser = new Parser(new StringReader("CCCCXXXI"));
+    //    parser.evaluate();
     //}
 
-    //@Test
-    //public void testFour() {
-    //    Parser parser = new Parser("IV");
-    //    assertEquals(4, parser.evaluate());
-    //}
+    @Ignore
+    public void test1883() throws IOException {
+        Parser parser = new Parser(new StringReader("MDCCCLXXXIII"));
+        assertEquals(1883, parser.evaluate());
+    }
 
-    //@Test(expected = Error.class)
-    //public void testFourWrong2() {
-    //    Parser parser = new Parser("IIV");
-    //    assertEquals(0, parser.evaluate());
-    //}
-
-    //@Test(expected = Error.class)
-    //public void testFourWrong3() {
-    //    Parser parser = new Parser("IIL");
-    //    assertEquals(2, parser.evaluate());
-    //}
-
-    //@Test
-    //public void testNine() {
-    //    Parser parser = new Parser("IX");
-    //    assertEquals(9, parser.evaluate());
-    //}
-
-    //@Test
-    //public void testFive() {
-    //    Parser parser = new Parser("V");
-    //    assertEquals(5, parser.evaluate());
-    //}
-
-    //@Test
-    //public void testSix() {
-    //    Parser parser = new Parser("VI");
-    //    assertEquals(6, parser.evaluate());
-    //}
-    //@Test
-    //public void testSeven() {
-    //    Parser parser = new Parser("VII");
-    //    assertEquals(7, parser.evaluate());
-    //}
-    //@Test
-    //public void testEight() {
-    //    Parser parser = new Parser("VIII");
-    //    assertEquals(8, parser.evaluate());
-    //}
-
-    //@Test(expected = Error.class)
-    //public void testNineWrong() {
-    //    Parser parser = new Parser("VIIII");
-    //    assertEquals(0, parser.evaluate());
-    //}
-
-    //@Test
-    //public void test11() {
-    //    Parser parser = new Parser("XI");
-    //    assertEquals(11, parser.evaluate());
-    //}
-
-    //@Test
-    //public void test101() {
-    //    Parser parser = new Parser("CI");
-    //    assertEquals(101, parser.evaluate());
-    //}
-
-    //@Test
-    //public void test111() {
-    //    Parser parser = new Parser("CXI");
-    //    assertEquals(111, parser.evaluate());
-    //}
-
-    //@Test
-    //public void test211() {
-    //    Parser parser = new Parser("CCXI");
-    //    assertEquals(211, parser.evaluate());
-    //}
-
-    //@Test
-    //public void test331() {
-    //    Parser parser = new Parser("CCCXXXI");
-    //    assertEquals(331, parser.evaluate());
-    //}
-
-    //@Test(expected = Error.class)
-    //public void test431Wrong() {
-    //    Parser parser = new Parser("CCCCXXXI");
-    //    assertEquals(331, parser.evaluate());
-    //}
-
-    //@Test
-    //public void test1883() {
-    //    Parser parser = new Parser("MDCCCLXXXIII");
-    //    assertEquals(1883, parser.evaluate());
-    //}
-
-    //@Test
-    //public void test55() {
-    //    Parser parser = new Parser("LV");
-    //    assertEquals(55, parser.evaluate());
-    //}
+    @Ignore
+    public void test55() throws IOException {
+        Parser parser = new Parser(new StringReader("LV"));
+        assertEquals(55, parser.evaluate());
+    }
 }

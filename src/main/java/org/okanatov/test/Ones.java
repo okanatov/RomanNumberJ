@@ -12,4 +12,8 @@ public class Ones implements Numbers {
     public char getTen() {
         return 'X';
     }
+
+    public boolean isEnd(int i) {
+        return i == -1;
+    }
 }

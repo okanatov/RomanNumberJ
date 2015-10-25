@@ -12,4 +12,8 @@ public class Tens implements Numbers {
     public char getTen() {
         return 'C';
     }
+
+    public boolean isEnd(int i) {
+        return i != getOne() && i != getFive() && i != getTen();
+    }
 }

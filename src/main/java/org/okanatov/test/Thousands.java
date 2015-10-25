@@ -12,4 +12,8 @@ public class Thousands implements Numbers {
     public char getTen() {
         return 0;
     }
+
+    public boolean isEnd(int i) {
+        return i != getOne() && i != getFive() && i != getTen();
+    }
 }
