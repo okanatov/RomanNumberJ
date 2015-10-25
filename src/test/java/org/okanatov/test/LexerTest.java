@@ -10,26 +10,13 @@ import static org.junit.Assert.*;
 public class LexerTest {
 
     @Test
-    public void testMarkAndTwiceReset() throws IOException {
+    public void testMarkAndReset() throws IOException {
         Lexer lexer = new Lexer(new StringReader("abcd"));
         assertEquals('a', lexer.scan());
-        assertEquals('b', lexer.scan());
-        lexer.unread("b");
+        lexer.mark(5);
         assertEquals('b', lexer.scan());
         assertEquals('c', lexer.scan());
-        assertEquals('d', lexer.scan());
-        assertEquals(-1, lexer.scan());
-    }
-
-    @Test
-    public void testComplex() throws IOException {
-        Lexer lexer = new Lexer(new StringReader("abcd"));
-        assertEquals('a', lexer.scan());
-        lexer.unread("a");
-        assertEquals('a', lexer.scan());
-        assertEquals('b', lexer.scan());
-        lexer.unread("ab");
-        assertEquals('a', lexer.scan());
+        lexer.reset();
         assertEquals('b', lexer.scan());
         assertEquals('c', lexer.scan());
         assertEquals('d', lexer.scan());
