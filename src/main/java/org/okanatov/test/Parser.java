@@ -6,19 +6,19 @@ import java.io.Reader;
 public class Parser {
     private final Lexer lexer;
     private int lookahead = 0;
+    private StringBuilder buffer = new StringBuilder("");
 
     private final Numbers thousands = new Thousands();
     private final Numbers hundreds = new Hundreds();
     private final Numbers tens = new Tens();
     private final Numbers ones = new Ones();
 
-    public Parser(Reader reader) {
+    public Parser(Reader reader) throws IOException {
         this.lexer = new Lexer(reader);
+        read();
     }
 
     public int evaluate() throws IOException {
-        lexer.mark(10);
-        lookahead = lexer.scan();
         int thousand = evaluate(thousands);
         int hundred = evaluate(hundreds);
         int ten = evaluate(tens);
@@ -35,50 +35,42 @@ public class Parser {
             return 1;
         }
 
-        lexer.reset();
-        lookahead = lexer.scan();
+        reset();
         if (test2(numbers)) {
             return 2;
         }
 
-        lexer.reset();
-        lookahead = lexer.scan();
+        reset();
         if (test3(numbers)) {
             return 3;
         }
 
-        lexer.reset();
-        lookahead = lexer.scan();
+        reset();
         if (test4(numbers)) {
             return 4;
         }
 
-        lexer.reset();
-        lookahead = lexer.scan();
+        reset();
         if (test5(numbers)) {
             return 5;
         }
 
-        lexer.reset();
-        lookahead = lexer.scan();
+        reset();
         if (test6(numbers)) {
             return 6;
         }
 
-        lexer.reset();
-        lookahead = lexer.scan();
+        reset();
         if (test7(numbers)) {
             return 7;
         }
 
-        lexer.reset();
-        lookahead = lexer.scan();
+        reset();
         if (test8(numbers)) {
             return 8;
         }
 
-        lexer.reset();
-        lookahead = lexer.scan();
+        reset();
         if (test9(numbers)) {
             return 9;
         }
@@ -86,52 +78,66 @@ public class Parser {
         throw new Error("parser error");
     }
 
-    private boolean isEnd(Numbers numbers) {
-        return numbers.isEnd(lookahead);
+    private boolean isEnd(Numbers numbers) throws IOException {
+        boolean isEnd = numbers.isEnd(lookahead);
+        if (isEnd)
+            buffer.delete(0, buffer.length() - 1);
+        return isEnd;
     }
 
     private boolean test1(Numbers numbers) throws IOException {
-        return match(numbers.getOne()) && isEnd(numbers);
+        return matchAndRead(numbers.getOne()) && isEnd(numbers);
     }
 
     private boolean test2(Numbers numbers) throws IOException {
-        return match(numbers.getOne()) && match(numbers.getOne()) && isEnd(numbers);
+        return matchAndRead(numbers.getOne()) && matchAndRead(numbers.getOne()) && isEnd(numbers);
     }
 
     private boolean test3(Numbers numbers) throws IOException {
-        return match(numbers.getOne()) && match(numbers.getOne()) && match(numbers.getOne()) && isEnd(numbers);
+        return matchAndRead(numbers.getOne()) && matchAndRead(numbers.getOne()) && matchAndRead(numbers.getOne()) && isEnd(numbers);
     }
 
     private boolean test4(Numbers numbers) throws IOException {
-        return match(numbers.getOne()) && match(numbers.getFive()) && isEnd(numbers);
+        return matchAndRead(numbers.getOne()) && matchAndRead(numbers.getFive()) && isEnd(numbers);
     }
 
     private boolean test5(Numbers numbers) throws IOException {
-        return match(numbers.getFive()) && isEnd(numbers);
+        return matchAndRead(numbers.getFive()) && isEnd(numbers);
     }
 
     private boolean test6(Numbers numbers) throws IOException {
-        return match(numbers.getFive()) && match(numbers.getOne()) && isEnd(numbers);
+        return matchAndRead(numbers.getFive()) && matchAndRead(numbers.getOne()) && isEnd(numbers);
     }
 
     private boolean test7(Numbers numbers) throws IOException {
-        return match(numbers.getFive()) && match(numbers.getOne()) && match(numbers.getOne()) && isEnd(numbers);
+        return matchAndRead(numbers.getFive()) && matchAndRead(numbers.getOne()) && matchAndRead(numbers.getOne()) && isEnd(numbers);
     }
 
     private boolean test8(Numbers numbers) throws IOException {
-        return match(numbers.getFive()) && match(numbers.getOne()) && match(numbers.getOne()) && match(numbers.getOne()) && isEnd(numbers);
+        return matchAndRead(numbers.getFive()) && matchAndRead(numbers.getOne()) && matchAndRead(numbers.getOne()) && matchAndRead(numbers.getOne()) && isEnd(numbers);
     }
 
     private boolean test9(Numbers numbers) throws IOException {
-        return match(numbers.getOne()) && match(numbers.getTen()) && isEnd(numbers);
+        return matchAndRead(numbers.getOne()) && matchAndRead(numbers.getTen()) && isEnd(numbers);
     }
 
-    private boolean match(char i) throws IOException {
+    private boolean matchAndRead(char i) throws IOException {
         if (i == (char) lookahead) {
-            lookahead = lexer.scan();
+            read();
             return true;
         } else {
             return false;
         }
+    }
+
+    private void read() throws IOException {
+        lookahead = lexer.scan();
+        buffer.append((char) lookahead);
+    }
+
+    private void reset() throws IOException {
+        lexer.unread(buffer.toString());
+        buffer.delete(0, buffer.length());
+        read();
     }
 }
