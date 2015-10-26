@@ -3,18 +3,21 @@ package org.okanatov.test;
 import java.io.*;
 
 public class Lexer {
-    public static final int SIZE = 10;
-    private PushbackReader pushbackReader;
+    private BufferedReader bufferedReader;
 
     public Lexer(Reader input) {
-        this.pushbackReader = new PushbackReader(input, SIZE);
+        this.bufferedReader = new BufferedReader(input);
     }
 
     public int scan() throws IOException {
-        return pushbackReader.read();
+        return bufferedReader.read();
     }
 
-    public void unread(String string) throws IOException {
-        pushbackReader.unread(string.toCharArray());
+    public void mark(int readLimit) throws IOException {
+        bufferedReader.mark(readLimit);
+    }
+
+    public void reset() throws IOException {
+        bufferedReader.reset();
     }
 }
