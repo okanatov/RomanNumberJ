@@ -10,6 +10,7 @@ public class Lexer {
     }
 
     public int scan() throws IOException {
+        // TODO: scan should return tokens
         return pushbackReader.read();
     }
 

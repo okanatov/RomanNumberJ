@@ -81,6 +81,7 @@ public class Parser {
     private boolean isEnd(Numbers numbers) throws IOException {
         boolean isEnd = numbers.isEnd(lookahead);
         if (isEnd)
+            // TODO: to change to make it similar to the reset function
             buffer.delete(0, buffer.length() - 1);
         return isEnd;
     }
@@ -132,6 +133,7 @@ public class Parser {
 
     private void read() throws IOException {
         lookahead = lexer.scan();
+        // TODO: scan should return tokens
         buffer.append((char) lookahead);
     }
 
