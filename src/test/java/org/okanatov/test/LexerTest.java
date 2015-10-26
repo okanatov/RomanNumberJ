@@ -13,10 +13,9 @@ public class LexerTest {
     public void testMarkAndReset() throws IOException {
         Lexer lexer = new Lexer(new StringReader("abcd"));
         assertEquals('a', lexer.scan());
-        lexer.mark(5);
         assertEquals('b', lexer.scan());
         assertEquals('c', lexer.scan());
-        lexer.reset();
+        lexer.unread("bc");
         assertEquals('b', lexer.scan());
         assertEquals('c', lexer.scan());
         assertEquals('d', lexer.scan());
