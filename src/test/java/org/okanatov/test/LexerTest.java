@@ -3,22 +3,23 @@ package org.okanatov.test;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.io.StringReader;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class LexerTest {
 
     @Test
-    public void testMarkAndReset() throws IOException {
-        Lexer lexer = new Lexer(new StringReader("abcd"));
-        assertEquals('a', lexer.scan());
-        assertEquals('b', lexer.scan());
-        assertEquals('c', lexer.scan());
-        lexer.unread("bc");
-        assertEquals('b', lexer.scan());
-        assertEquals('c', lexer.scan());
-        assertEquals('d', lexer.scan());
-        assertEquals(-1, lexer.scan());
+    public void test4() throws IOException {
+        Lexer lexer = Lexer.createFromReader(new StringReader("IV"), "4");
+        Reader reader = lexer.scan();
+        StringBuilder buffer = new StringBuilder("");
+
+        int ch;
+        while ((ch = reader.read()) != -1)
+            buffer.append((char) ch);
+
+        assertEquals("IV", buffer.toString());
     }
 }
