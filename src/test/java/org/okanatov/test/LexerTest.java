@@ -13,12 +13,14 @@ public class LexerTest {
     @Test
     public void test4() throws IOException {
         Lexer lexer = Lexer.createFromReader(new StringReader("IV"), "IV");
-        Reader reader = lexer.scan();
         StringBuilder buffer = new StringBuilder("");
 
         int ch;
-        while ((ch = reader.read()) != -1)
+        Reader reader;
+        while (((reader = lexer.scan()) != null) && (reader.ready())) {
+            ch = reader.read();
             buffer.append((char) ch);
+        }
 
         assertEquals("[IV]", buffer.toString());
     }
