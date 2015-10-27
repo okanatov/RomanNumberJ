@@ -12,7 +12,7 @@ public class LexerTest {
 
     @Test
     public void test4() throws IOException {
-        Lexer lexer = Lexer.createFromReader(new StringReader("IV"), "4");
+        Lexer lexer = Lexer.createFromReader(new StringReader("IV"), "IV");
         Reader reader = lexer.scan();
         StringBuilder buffer = new StringBuilder("");
 
@@ -20,6 +20,6 @@ public class LexerTest {
         while ((ch = reader.read()) != -1)
             buffer.append((char) ch);
 
-        assertEquals("IV", buffer.toString());
+        assertEquals("[IV]", buffer.toString());
     }
 }
