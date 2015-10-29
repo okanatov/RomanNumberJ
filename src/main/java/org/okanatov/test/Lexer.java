@@ -6,7 +6,6 @@ import java.util.Iterator;
 
 public class Lexer {
     private ArrayList<String> tokens = new ArrayList<>();
-
     private InputStream source = null;
     private Lexer lexer = null;
     private String replacingString;
@@ -21,14 +20,19 @@ public class Lexer {
         this.replacingString = string;
     }
 
-    public InputStream read() throws IOException {
-        PipedOutputStream pipedOutputStream = new PipedOutputStream();
-        PipedInputStream pipedInputStream = new PipedInputStream(pipedOutputStream);
-        PrintStream printStream = new PrintStream(pipedOutputStream);
+    public String readToken() throws IOException {
+        InputStream inputStream;
+        if (source != null) {
+            inputStream = new DataInputStream(source);
+        } else {
+            String source = lexer.readToken();
+            if (source == null)
+                return null;
+
+            inputStream = new ByteArrayInputStream(source.getBytes());
+        }
 
         StringBuilder buffer = new StringBuilder("");
-        DataInputStream inputStream = new DataInputStream(source != null ? source : lexer.read());
-
         while (tokens.isEmpty()) {
             int ch;
             if ((ch = inputStream.read()) != -1) {
@@ -45,10 +49,8 @@ public class Lexer {
 
         removeSpacesFromTokensArray();
         if (!tokens.isEmpty())
-            printStream.print(tokens.remove(0));
-        printStream.close();
-
-        return pipedInputStream;
+            return tokens.remove(0);
+        return null;
     }
 
     private void removeSpacesFromTokensArray() {
