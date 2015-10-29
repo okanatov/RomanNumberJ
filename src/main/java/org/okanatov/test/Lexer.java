@@ -5,55 +5,70 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class Lexer {
-    private ArrayList<String> tokens = new ArrayList<>();
-    private InputStream source = null;
-    private Lexer lexer = null;
-    private String replacingString;
+    private final ArrayList<String> tokens = new ArrayList<>();
+    private final String matchingString;
+    private InputStream source;
+    private Lexer lexer;
 
-    public Lexer(String source, String string) throws IOException {
+    public Lexer(String source, String matchingString) {
+        this(matchingString);
         this.source = new ByteArrayInputStream(source.getBytes());
-        this.replacingString = string;
     }
 
-    public Lexer(Lexer lexer, String string) throws IOException {
+    public Lexer(Lexer lexer, String matchingString) {
+        this(matchingString);
         this.lexer = lexer;
-        this.replacingString = string;
     }
 
-    public String readToken() throws IOException {
-        InputStream inputStream;
-        if (source != null) {
-            inputStream = new DataInputStream(source);
-        } else {
-            String source = lexer.readToken();
-            if (source == null)
-                return null;
+    private Lexer(String matchingString) {
+        this.matchingString = matchingString;
+    }
 
-            inputStream = new ByteArrayInputStream(source.getBytes());
-        }
+    public String readToken() {
+        InputStream inputStream = getInputStream();
+        if (inputStream == null) return null;
 
         StringBuilder buffer = new StringBuilder("");
         while (tokens.isEmpty()) {
-            int ch;
-            if ((ch = inputStream.read()) != -1) {
-                buffer.append((char) ch);
-                if (buffer.toString().contains(replacingString)) {
-                    int idx = buffer.indexOf(replacingString);
-                    tokens.add(buffer.substring(0, idx));
-                    tokens.add("[" + replacingString + "]");
-                }
+            try {
+                readFromStreamAndCheckForMatchingStringInBuffer(inputStream, buffer);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            if (ch == -1)
-                tokens.add(buffer.toString());
         }
 
-        removeSpacesFromTokensArray();
+        removeEmptyTokensFromArray();
         if (!tokens.isEmpty())
             return tokens.remove(0);
         return null;
     }
 
-    private void removeSpacesFromTokensArray() {
+    private InputStream getInputStream() {
+        InputStream inputStream;
+        if (source != null) {
+            inputStream = new DataInputStream(source);
+        } else {
+            String source = lexer.readToken();
+            inputStream = source != null ? new ByteArrayInputStream(source.getBytes()) : null;
+        }
+        return inputStream;
+    }
+
+    private void readFromStreamAndCheckForMatchingStringInBuffer(InputStream inputStream, StringBuilder buffer) throws IOException {
+        int ch;
+        if ((ch = inputStream.read()) != -1) {
+            buffer.append((char) ch);
+            if (buffer.toString().contains(matchingString)) {
+                int idx = buffer.indexOf(matchingString);
+                tokens.add(buffer.substring(0, idx));
+                tokens.add("[" + matchingString + "]");
+            }
+        }
+        if (ch == -1)
+            tokens.add(buffer.toString());
+    }
+
+    private void removeEmptyTokensFromArray() {
         Iterator<String> iterator = tokens.iterator();
         while (iterator.hasNext()) {
             String object = iterator.next();
