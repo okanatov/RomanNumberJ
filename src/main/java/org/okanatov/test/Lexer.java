@@ -2,108 +2,61 @@ package org.okanatov.test;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class Lexer {
-    private Reader source = null;
-    private Lexer lexer = null;
-    private String replacingString;
-    private PipedReader pipedReader;
-    private PrintWriter printWriter;
     private ArrayList<String> tokens = new ArrayList<>();
 
-    public Lexer(Reader source, String string) throws IOException {
-        this.source = source;
-        this.replacingString = string;
+    private InputStream source = null;
+    private Lexer lexer = null;
+    private String replacingString;
 
-        PipedWriter pipedWriter = new PipedWriter();
-        pipedReader = new PipedReader(pipedWriter);
-        printWriter = new PrintWriter(pipedWriter);
+    public Lexer(String source, String string) throws IOException {
+        this.source = new ByteArrayInputStream(source.getBytes());
+        this.replacingString = string;
     }
 
     public Lexer(Lexer lexer, String string) throws IOException {
         this.lexer = lexer;
         this.replacingString = string;
-
-        PipedWriter pipedWriter = new PipedWriter();
-        pipedReader = new PipedReader(pipedWriter);
-        printWriter = new PrintWriter(pipedWriter);
     }
 
-    public Reader scan() throws IOException {
-        if (source != null)
-            return scanFromReader();
-        else
-            return scanFromLexer();
-    }
+    public InputStream read() throws IOException {
+        PipedOutputStream pipedOutputStream = new PipedOutputStream();
+        PipedInputStream pipedInputStream = new PipedInputStream(pipedOutputStream);
+        PrintStream printStream = new PrintStream(pipedOutputStream);
 
-    private Reader scanFromReader() throws IOException {
-        if (tokens.isEmpty()) {
-            StringBuilder buffer = new StringBuilder("");
+        StringBuilder buffer = new StringBuilder("");
+        DataInputStream inputStream = new DataInputStream(source != null ? source : lexer.read());
 
-            while (tokens.isEmpty()) {
-                int ch = 0;
-                if (source.ready()) {
-                    ch = source.read();
-                    if (ch != ' ')
-                        buffer.append((char) ch);
-                    if (buffer.toString().contains(replacingString)) {
-                        int idx = buffer.indexOf(replacingString);
-                        tokens.add(buffer.substring(0, idx));
-                        tokens.add("[" + replacingString + "]");
-                        for (String s : tokens)
-                            if (s.equals(""))
-                                tokens.remove(s);
-                        // TODO: buffer needs cleaning
-                        buffer = new StringBuilder("");
-                    }
-                }
-                if (ch == -1) {
-                    if (buffer.length() != 0)
-                        tokens.add(buffer.toString());
+        while (tokens.isEmpty()) {
+            int ch;
+            if ((ch = inputStream.read()) != -1) {
+                buffer.append((char) ch);
+                if (buffer.toString().contains(replacingString)) {
+                    int idx = buffer.indexOf(replacingString);
+                    tokens.add(buffer.substring(0, idx));
+                    tokens.add("[" + replacingString + "]");
                 }
             }
-        }
-        if (!tokens.isEmpty()) {
-            String result = tokens.remove(0);
-            printWriter.print(result);
+            if (ch == -1)
+                tokens.add(buffer.toString());
         }
 
-        return pipedReader;
+        removeSpacesFromTokensArray();
+        if (!tokens.isEmpty())
+            printStream.print(tokens.remove(0));
+        printStream.close();
+
+        return pipedInputStream;
     }
 
-    private Reader scanFromLexer() throws IOException {
-        if (tokens.isEmpty()) {
-            Reader reader = lexer.scan();
-            StringBuilder buffer = new StringBuilder("");
-
-            while (tokens.isEmpty()) {
-                int ch;
-                if (reader.ready()) {
-                    ch = reader.read();
-                    if (ch != ' ')
-                        buffer.append((char) ch);
-                    if (buffer.toString().contains(replacingString)) {
-                        int idx = buffer.indexOf(replacingString);
-                        tokens.add(buffer.substring(0, idx));
-                        tokens.add("[" + replacingString + "]");
-                        for (String s : tokens)
-                            if (s.equals(""))
-                                tokens.remove(s);
-                        // TODO: buffer needs cleaning
-                        buffer = new StringBuilder("");
-                    }
-                }
-                if (!reader.ready()) {
-                    if (buffer.length() != 0)
-                        tokens.add(buffer.toString());
-                }
-            }
+    private void removeSpacesFromTokensArray() {
+        Iterator<String> iterator = tokens.iterator();
+        while (iterator.hasNext()) {
+            String object = iterator.next();
+            if (object.equals("") || object.equals(" "))
+                iterator.remove();
         }
-        if (!tokens.isEmpty()) {
-            String result = tokens.remove(0);
-            printWriter.print(result);
-        }
-
-        return pipedReader;
     }
 }
