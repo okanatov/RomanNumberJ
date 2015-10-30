@@ -1,12 +1,18 @@
 package org.okanatov.test;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Lexer implements Iterable<Token> {
     private final ArrayList<Token> tokens = new ArrayList<>();
-    private final String matchingString;
+    private StringBuilder buffer = new StringBuilder("");
+    private final Pattern pattern;
     private InputStream source;
     private Lexer lexer;
 
@@ -31,12 +37,12 @@ public class Lexer implements Iterable<Token> {
         }
 
         try {
-            readFromStreamAndCheckForMatchingStringInBuffer(inputStream);
+            readAndCheckForPattern(inputStream);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        removeEmptyTokensFromArray();
+        removeEmptyTokens();
         if (!tokens.isEmpty())
             return tokens.remove(0);
         return null;
@@ -48,27 +54,29 @@ public class Lexer implements Iterable<Token> {
     }
 
     private Lexer(String matchingString) {
-        this.matchingString = matchingString;
+        pattern = Pattern.compile(matchingString);
     }
 
-    private void readFromStreamAndCheckForMatchingStringInBuffer(InputStream inputStream) throws IOException {
-        StringBuilder buffer = new StringBuilder("");
+    private void readAndCheckForPattern(InputStream inputStream) throws IOException {
         while (tokens.isEmpty()) {
             int ch;
             if ((ch = inputStream.read()) != -1) {
                 buffer.append((char) ch);
-                if (buffer.toString().contains(matchingString)) {
-                    int idx = buffer.indexOf(matchingString);
-                    tokens.add(new Token(buffer.substring(0, idx), 0));
-                    tokens.add(new Token("[" + matchingString + "]", 1));
+                Matcher matcher = pattern.matcher(buffer);
+                if (matcher.find()) {
+                    tokens.add(new Token(buffer.substring(0, matcher.start()), 0));
+                    tokens.add(new Token("[" + buffer.substring(matcher.start(), matcher.end()) + "]", 1));
+                    buffer.delete(0, matcher.end());
                 }
             }
-            if (ch == -1)
+            if (ch == -1) {
                 tokens.add(new Token(buffer.toString(), 0));
+                buffer = new StringBuilder("");
+            }
         }
     }
 
-    private void removeEmptyTokensFromArray() {
+    private void removeEmptyTokens() {
         Iterator<Token> iterator = tokens.iterator();
         while (iterator.hasNext()) {
             Token object = iterator.next();
