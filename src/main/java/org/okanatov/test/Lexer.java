@@ -21,8 +21,14 @@ public class Lexer implements Iterable<Token> {
     }
 
     public Token readToken() {
-        InputStream inputStream = getInputStream();
-        if (inputStream == null) return null;
+        InputStream inputStream;
+        if (source != null) {
+            inputStream = new DataInputStream(source);
+        } else {
+            Token source = lexer.readToken();
+            if (source == null || source.getType() != 0) return source;
+            else inputStream = new ByteArrayInputStream(source.toString().getBytes());
+        }
 
         try {
             readFromStreamAndCheckForMatchingStringInBuffer(inputStream);
@@ -45,32 +51,20 @@ public class Lexer implements Iterable<Token> {
         this.matchingString = matchingString;
     }
 
-    private InputStream getInputStream() {
-        InputStream inputStream;
-        if (source != null) {
-            inputStream = new DataInputStream(source);
-        } else {
-            Token source = lexer.readToken();
-            inputStream = source != null ? new ByteArrayInputStream(source.toString().getBytes()) : null;
-        }
-        return inputStream;
-    }
-
     private void readFromStreamAndCheckForMatchingStringInBuffer(InputStream inputStream) throws IOException {
         StringBuilder buffer = new StringBuilder("");
-
         while (tokens.isEmpty()) {
             int ch;
             if ((ch = inputStream.read()) != -1) {
                 buffer.append((char) ch);
                 if (buffer.toString().contains(matchingString)) {
                     int idx = buffer.indexOf(matchingString);
-                    tokens.add(new Token(buffer.substring(0, idx)));
-                    tokens.add(new Token("[" + matchingString + "]"));
+                    tokens.add(new Token(buffer.substring(0, idx), 0));
+                    tokens.add(new Token("[" + matchingString + "]", 1));
                 }
             }
             if (ch == -1)
-                tokens.add(new Token(buffer.toString()));
+                tokens.add(new Token(buffer.toString(), 0));
         }
     }
 
@@ -78,7 +72,7 @@ public class Lexer implements Iterable<Token> {
         Iterator<Token> iterator = tokens.iterator();
         while (iterator.hasNext()) {
             Token object = iterator.next();
-            String text = object.getText();
+            String text = object.toString();
             if (text.equals("") || text.equals(" "))
                 iterator.remove();
         }

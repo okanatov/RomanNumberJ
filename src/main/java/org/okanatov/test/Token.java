@@ -2,13 +2,15 @@ package org.okanatov.test;
 
 public class Token {
     private String text;
+    private int type; // 0 - unknown
 
-    public Token(String text) {
+    public Token(String text, int type) {
         this.text = text;
+        this.type = type;
     }
 
-    public String getText() {
-        return text;
+    public int getType() {
+        return type;
     }
 
     @Override
