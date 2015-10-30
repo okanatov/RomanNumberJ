@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class Lexer {
+public class Lexer implements Iterable {
     private final ArrayList<String> tokens = new ArrayList<>();
     private final String matchingString;
     private InputStream source;
@@ -74,6 +74,31 @@ public class Lexer {
             String object = iterator.next();
             if (object.equals("") || object.equals(" "))
                 iterator.remove();
+        }
+    }
+
+    @Override
+    public Iterator<String> iterator() {
+        return new LexerIterator();
+    }
+
+    private class LexerIterator implements Iterator<String> {
+
+        private String token = null;
+
+        @Override
+        public boolean hasNext() {
+            return ((token = Lexer.this.readToken()) != null);
+        }
+
+        @Override
+        public String next() {
+            return token;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException("remove is not supported by Lexer");
         }
     }
 }
