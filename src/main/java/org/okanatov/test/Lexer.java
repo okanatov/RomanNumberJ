@@ -10,9 +10,9 @@ public class Lexer {
     private InputStream source;
     private Lexer lexer;
 
-    public Lexer(String source, String matchingString) {
+    public Lexer(InputStream source, String matchingString) {
         this(matchingString);
-        this.source = new ByteArrayInputStream(source.getBytes());
+        this.source = source;
     }
 
     public Lexer(Lexer lexer, String matchingString) {
