@@ -4,8 +4,8 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class Lexer implements Iterable {
-    private final ArrayList<String> tokens = new ArrayList<>();
+public class Lexer implements Iterable<Token> {
+    private final ArrayList<Token> tokens = new ArrayList<>();
     private final String matchingString;
     private InputStream source;
     private Lexer lexer;
@@ -20,21 +20,14 @@ public class Lexer implements Iterable {
         this.lexer = lexer;
     }
 
-    private Lexer(String matchingString) {
-        this.matchingString = matchingString;
-    }
-
-    public String readToken() {
+    public Token readToken() {
         InputStream inputStream = getInputStream();
         if (inputStream == null) return null;
 
-        StringBuilder buffer = new StringBuilder("");
-        while (tokens.isEmpty()) {
-            try {
-                readFromStreamAndCheckForMatchingStringInBuffer(inputStream, buffer);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        try {
+            readFromStreamAndCheckForMatchingStringInBuffer(inputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         removeEmptyTokensFromArray();
@@ -43,48 +36,57 @@ public class Lexer implements Iterable {
         return null;
     }
 
+    @Override
+    public Iterator<Token> iterator() {
+        return new LexerIterator();
+    }
+
+    private Lexer(String matchingString) {
+        this.matchingString = matchingString;
+    }
+
     private InputStream getInputStream() {
         InputStream inputStream;
         if (source != null) {
             inputStream = new DataInputStream(source);
         } else {
-            String source = lexer.readToken();
-            inputStream = source != null ? new ByteArrayInputStream(source.getBytes()) : null;
+            Token source = lexer.readToken();
+            inputStream = source != null ? new ByteArrayInputStream(source.toString().getBytes()) : null;
         }
         return inputStream;
     }
 
-    private void readFromStreamAndCheckForMatchingStringInBuffer(InputStream inputStream, StringBuilder buffer) throws IOException {
-        int ch;
-        if ((ch = inputStream.read()) != -1) {
-            buffer.append((char) ch);
-            if (buffer.toString().contains(matchingString)) {
-                int idx = buffer.indexOf(matchingString);
-                tokens.add(buffer.substring(0, idx));
-                tokens.add("[" + matchingString + "]");
+    private void readFromStreamAndCheckForMatchingStringInBuffer(InputStream inputStream) throws IOException {
+        StringBuilder buffer = new StringBuilder("");
+
+        while (tokens.isEmpty()) {
+            int ch;
+            if ((ch = inputStream.read()) != -1) {
+                buffer.append((char) ch);
+                if (buffer.toString().contains(matchingString)) {
+                    int idx = buffer.indexOf(matchingString);
+                    tokens.add(new Token(buffer.substring(0, idx)));
+                    tokens.add(new Token("[" + matchingString + "]"));
+                }
             }
+            if (ch == -1)
+                tokens.add(new Token(buffer.toString()));
         }
-        if (ch == -1)
-            tokens.add(buffer.toString());
     }
 
     private void removeEmptyTokensFromArray() {
-        Iterator<String> iterator = tokens.iterator();
+        Iterator<Token> iterator = tokens.iterator();
         while (iterator.hasNext()) {
-            String object = iterator.next();
-            if (object.equals("") || object.equals(" "))
+            Token object = iterator.next();
+            String text = object.getText();
+            if (text.equals("") || text.equals(" "))
                 iterator.remove();
         }
     }
 
-    @Override
-    public Iterator<String> iterator() {
-        return new LexerIterator();
-    }
+    private class LexerIterator implements Iterator<Token> {
 
-    private class LexerIterator implements Iterator<String> {
-
-        private String token = null;
+        private Token token = null;
 
         @Override
         public boolean hasNext() {
@@ -92,7 +94,7 @@ public class Lexer implements Iterable {
         }
 
         @Override
-        public String next() {
+        public Token next() {
             return token;
         }
 
