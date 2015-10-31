@@ -13,6 +13,7 @@ public class Lexer implements Iterable<Token> {
     private StringBuilder buffer = new StringBuilder("");
     private final Pattern pattern;
     private InputStream source;
+    private InputStream is = null;
     private Lexer lexer;
 
     public Lexer(InputStream source, String matchingString) {
@@ -68,10 +69,11 @@ public class Lexer implements Iterable<Token> {
 
     private Token readTokenFromLexer() throws IOException {
         while (tokens.isEmpty()) {
-            Token token = lexer.readToken();
-            if (token == null || token.getType() != 0) return token;
-
-            InputStream is = new ByteArrayInputStream(token.toString().getBytes());
+            if (is == null || is.available() <= 0) {
+                Token token = lexer.readToken();
+                if (token == null || token.getType() != 0) return token;
+                is = new ByteArrayInputStream(token.toString().getBytes());
+            }
 
             int ch;
             while ((ch = is.read()) != -1) {
