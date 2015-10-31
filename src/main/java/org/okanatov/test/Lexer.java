@@ -1,5 +1,6 @@
 package org.okanatov.test;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -28,8 +29,13 @@ public class Lexer implements Iterable<Token> {
         if (source != null)
             return readTokenFromStream();
         else {
-            return readTokenFromLexer();
+            try {
+                return readTokenFromLexer();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+        return null;
     }
 
     private Token readTokenFromStream() {
@@ -60,21 +66,27 @@ public class Lexer implements Iterable<Token> {
         return null;
     }
 
-    private Token readTokenFromLexer() {
-        if (!tokens.isEmpty())
-            return tokens.remove(0);
+    private Token readTokenFromLexer() throws IOException {
+        while (tokens.isEmpty()) {
+            Token token = lexer.readToken();
+            if (token == null || token.getType() != 0) return token;
 
-        Token token = lexer.readToken();
-        if (token == null || token.getType() != 0) return token;
+            InputStream is = new ByteArrayInputStream(token.toString().getBytes());
 
-        String text = token.toString();
-        Matcher matcher = pattern.matcher(text);
-        if (matcher.find()) {
-            tokens.add(new Token(text.substring(0, matcher.start()), 0));
-            tokens.add(new Token("[" + text.substring(matcher.start(), matcher.end()) + "]", 1));
-            tokens.add(new Token(text.substring(matcher.end(), text.length()), 0));
-        } else {
-            tokens.add(new Token(text, 0));
+            int ch;
+            while ((ch = is.read()) != -1) {
+                buffer.append((char) ch);
+                Matcher matcher = pattern.matcher(buffer);
+                if (matcher.find()) {
+                    tokens.add(new Token(buffer.substring(0, matcher.start()), 0));
+                    tokens.add(new Token("[" + buffer.substring(matcher.start(), matcher.end()) + "]", 1));
+                    buffer.delete(0, matcher.end());
+                }
+            }
+            if (ch == -1) {
+                tokens.add(new Token(buffer.toString(), 0));
+                buffer = new StringBuilder("");
+            }
         }
 
         removeEmptyTokens();
