@@ -68,13 +68,13 @@ public class Lexer implements Iterable<Token> {
     }
 
     private Token readTokenFromLexer() throws IOException {
-        while (tokens.isEmpty()) {
-            if (is == null || is.available() <= 0) {
-                Token token = lexer.readToken();
-                if (token == null || token.getType() != 0) return token;
-                is = new ByteArrayInputStream(token.toString().getBytes());
-            }
+        if (is == null) {
+            Token token = lexer.readToken();
+            if (token == null || token.getType() != 0) return token;
+            is = new ByteArrayInputStream(token.toString().getBytes());
+        }
 
+        while (tokens.isEmpty()) {
             int ch;
             while ((ch = is.read()) != -1) {
                 buffer.append((char) ch);
@@ -88,6 +88,12 @@ public class Lexer implements Iterable<Token> {
             if (ch == -1) {
                 tokens.add(new Token(buffer.toString(), 0));
                 buffer = new StringBuilder("");
+                removeEmptyTokens();
+                if (tokens.isEmpty()) {
+                    Token token = lexer.readToken();
+                    if (token == null || token.getType() != 0) return token;
+                    is = new ByteArrayInputStream(token.toString().getBytes());
+                }
             }
         }
 

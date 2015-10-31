@@ -93,7 +93,7 @@ public class LexerTest {
 
     @Test
     public void test4() {
-        Lexer lexer = new Lexer(new ByteArrayInputStream("IVX".getBytes()), "IV");
+        Lexer lexer = new Lexer(new ByteArrayInputStream("IVX".getBytes()), "IV[^X]?");
 
         token = lexer.readToken();
         assertEquals("[IV]", token.toString());
