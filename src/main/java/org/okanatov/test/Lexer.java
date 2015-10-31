@@ -1,7 +1,5 @@
 package org.okanatov.test;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -27,19 +25,56 @@ public class Lexer implements Iterable<Token> {
     }
 
     public Token readToken() {
-        InputStream inputStream;
-        if (source != null) {
-            inputStream = new DataInputStream(source);
-        } else {
-            Token source = lexer.readToken();
-            if (source == null || source.getType() != 0) return source;
-            else inputStream = new ByteArrayInputStream(source.toString().getBytes());
+        if (source != null)
+            return readTokenFromStream();
+        else {
+            return readTokenFromLexer();
         }
+    }
 
+    private Token readTokenFromStream() {
         try {
-            readAndCheckForPattern(inputStream);
+            while (tokens.isEmpty()) {
+                int ch;
+                if ((ch = source.read()) != -1) {
+                    buffer.append((char) ch);
+                    Matcher matcher = pattern.matcher(buffer);
+                    if (matcher.find()) {
+                        tokens.add(new Token(buffer.substring(0, matcher.start()), 0));
+                        tokens.add(new Token("[" + buffer.substring(matcher.start(), matcher.end()) + "]", 1));
+                        buffer.delete(0, matcher.end());
+                    }
+                }
+                if (ch == -1) {
+                    tokens.add(new Token(buffer.toString(), 0));
+                    buffer = new StringBuilder("");
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+
+        removeEmptyTokens();
+        if (!tokens.isEmpty())
+            return tokens.remove(0);
+        return null;
+    }
+
+    private Token readTokenFromLexer() {
+        if (!tokens.isEmpty())
+            return tokens.remove(0);
+
+        Token token = lexer.readToken();
+        if (token == null || token.getType() != 0) return token;
+
+        String text = token.toString();
+        Matcher matcher = pattern.matcher(text);
+        if (matcher.find()) {
+            tokens.add(new Token(text.substring(0, matcher.start()), 0));
+            tokens.add(new Token("[" + text.substring(matcher.start(), matcher.end()) + "]", 1));
+            tokens.add(new Token(text.substring(matcher.end(), text.length()), 0));
+        } else {
+            tokens.add(new Token(text, 0));
         }
 
         removeEmptyTokens();
@@ -55,25 +90,6 @@ public class Lexer implements Iterable<Token> {
 
     private Lexer(String matchingString) {
         pattern = Pattern.compile(matchingString);
-    }
-
-    private void readAndCheckForPattern(InputStream inputStream) throws IOException {
-        while (tokens.isEmpty()) {
-            int ch;
-            if ((ch = inputStream.read()) != -1) {
-                buffer.append((char) ch);
-                Matcher matcher = pattern.matcher(buffer);
-                if (matcher.find()) {
-                    tokens.add(new Token(buffer.substring(0, matcher.start()), 0));
-                    tokens.add(new Token("[" + buffer.substring(matcher.start(), matcher.end()) + "]", 1));
-                    buffer.delete(0, matcher.end());
-                }
-            }
-            if (ch == -1) {
-                tokens.add(new Token(buffer.toString(), 0));
-                buffer = new StringBuilder("");
-            }
-        }
     }
 
     private void removeEmptyTokens() {
