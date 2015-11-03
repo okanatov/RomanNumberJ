@@ -1,20 +1,23 @@
 package org.okanatov.test;
 
+import org.okanatov.lexer.Lexer;
+import org.okanatov.lexer.Token;
+
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.Reader;
 
 public class Parser {
-    private final Reader reader;
-    private int lookahead = -1;
+    private Token lookahead;
+    private final Lexer lexer;
 
     private final Numbers thousands = new Thousands();
     private final Numbers hundreds = new Hundreds();
     private final Numbers tens = new Tens();
     private final Numbers ones = new Ones();
 
-    public Parser(Reader reader) throws IOException {
-        this.reader = reader;
-        this.lookahead = reader.read();
+    public Parser(String string) throws IOException {
+        lexer = new Lexer(new ByteArrayInputStream(string.getBytes()), ".");
+        lookahead = lexer.readToken();
     }
 
     public int evaluate() throws IOException {
@@ -65,14 +68,14 @@ public class Parser {
     }
 
     private boolean match(char x) throws IOException {
-        if (x == (char) lookahead) {
-            lookahead = reader.read();
+        if (lookahead != null && x == lookahead.toString().charAt(0)) {
+            lookahead = lexer.readToken();
             return true;
         }
         return false;
     }
 
     private boolean isEnd(Numbers numbers) {
-        return numbers.isEnd(lookahead);
+        return lookahead == null || numbers.isEnd(lookahead.toString().charAt(0));
     }
 }
